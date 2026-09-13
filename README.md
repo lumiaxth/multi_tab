@@ -1,6 +1,19 @@
 # Multi Tab 网格多开
 
-一个 Firefox 浏览器扩展（Manifest V3），用于批量打开网页并按网格平铺排列，支持哔哩哔哩直播自动网页全屏。
+[English](#english) | 简体中文
+
+一个 Firefox / Edge 浏览器扩展（Manifest V3），主要功能有：（一）批量打开网页并按网格平铺排列，支持哔哩哔哩直播多开后自动网页全屏。（二）将现有标签页按网格整理，平铺到整个屏幕。
+
+- **A Firefox / Edge extension (Manifest V3)** that opens multiple copies of a webpage or all open tabs in a tiled grid layout, with optional auto web fullscreen for Bilibili Live. UI is available in English and Simplified Chinese (auto-follows browser language).
+
+## 插件简介
+
+Multi Tab 网格多开解决一个核心问题：**在浏览器里同时打开并摆放多个页面副本**。典型场景有：
+
+- 同时监控多个直播间或行情页面：输入网址 + 打开数量，一键铺满屏幕
+- 多标签整理：把当前窗口的所有标签页一键拆分成整齐的窗口网格
+
+它不修改网页内容，只是打开真实窗口并精确摆放位置——因此页面保持完整登录态与播放状态，兼容任何网站。附带针对哔哩哔哩直播的自动网页全屏，让多窗口观看更沉浸。
 
 ## 功能特性
 
@@ -25,12 +38,33 @@
 
 ## 安装（临时加载，适合开发测试）
 
-1. Firefox 打开 `about:debugging`
-2. 点击左侧"此 Firefox"
-3. 点击"临时载入附加组件"
-4. 选择本目录下的 `manifest.json`
+### Firefox
 
-> 注意：修改权限（manifest.json）后必须重新载入扩展才能生效。
+1. 运行构建脚本：`node build-firefox.mjs`（需要 Node.js）
+2. Firefox 打开 `about:debugging` → 左侧"此 Firefox" → "临时载入附加组件"
+3. 选择生成的 `dist-firefox/` 目录下的 `manifest.json`
+
+### Edge / Chrome
+
+根目录 `manifest.json` 即 Chromium 版：
+
+1. 打开 `edge://extensions`（Chrome 为 `chrome://extensions`）
+2. 开启"开发人员模式" / "Developer mode"
+3. 点击"加载解压缩的扩展" / "Load unpacked"，选择**项目根目录**
+
+> 根目录 `manifest.json` 是 Chromium(Edge/Chrome) 版（`service_worker` 后台）；`build-firefox.mjs` 会生成 Firefox 版（`background.scripts` 后台 + gecko 设置）到 `dist-firefox/`。**不要**在 Chromium 浏览器里加载 `dist-firefox/`，也**不要**在 Firefox 里直接加载根目录。
+
+### 商店发布打包
+
+```bash
+node pack.mjs
+```
+
+输出到 `artifacts/`：
+- `multitab-edge.mv3.zip` — 上传到 [Microsoft Edge 合作伙伴中心](https://partner.microsoft.com/dashboard/microsoftedge/overview)
+- `multitab-firefox.mv3.zip` — 上传到 [Firefox Mail Add-ons (AMO)](https://addons.mozilla.org/developers/)
+
+两个包均以完整文件列表打包（`manifest.json` 在包根目录、无开发用文件），已验证内容差异正确（Edge 为 service_worker、Firefox 为 background.scripts + gecko 设置）。
 
 ## 使用方法
 
@@ -46,14 +80,23 @@
 
 ```
 multi_tab/
-├── manifest.json          # MV3 清单，Firefox 115+，权限: storage、tabs
-├── background.js          # 网格计算、批量开窗、平铺标签页、整组关闭
+├── manifest.json            # MV3 清单（Chromium/Edge 版），权限: storage、tabs
+├── background.js            # 网格计算、批量开窗、平铺标签页、整组关闭
 ├── popup/
-│   ├── popup.html         # 设置界面
-│   ├── popup.css          # 样式（含最大化提示条）
-│   └── popup.js           # 设置读写、消息发送、原标签页关闭
-└── content/
-    └── bili-fullscreen.js # B站直播自动网页全屏（JS API + 按钮点击兜底）
+│   ├── popup.html           # 设置界面（data-i18n 标记）
+│   ├── popup.css            # 样式（含最大化提示条）
+│   └── popup.js             # i18n 填充、设置读写、消息发送、原标签页关闭
+├── content/
+│   ├── bili-fullscreen.js   # B站直播自动网页全屏（分派浏览器专用路径）
+│   └── injected/
+│       └── bili-api.js      # 页面上下文脚本（Chromium 注入，调 livePlayer API）
+├── icons/                   # 扩展图标（16/32/48/128）
+├── _locales/                # i18n 语言包（zh_CN / en）
+│   ├── zh_CN/messages.json
+│   └── en/messages.json
+├── make-icons.ps1           # 图标生成脚本（PowerShell + System.Drawing）
+├── build-firefox.mjs        # Firefox 构建（生成 dist-firefox/）
+└── pack.mjs                 # 商店打包脚本（输出 artifacts/*.zip）
 ```
 
 ## 已知限制
@@ -62,3 +105,25 @@ multi_tab/
 - B 站改版可能导致备用路径的按钮选择器失效（主路径 JS API 不受影响）
 - B 站特殊聚合页（iframe 嵌入播放器）跨域无法操作，自动全屏仅在普通直播间生效
 - 平铺所有标签页的上限为 16 个，超出的标签页不会平铺
+- Firefox 版构建（`build-firefox.mjs`）已内置 AMO 2025-11 新政要求的 `data_collection_permissions`（声明不收集数据），因此最低版本为 Firefox 142；如需支持更早版本需自行评估该字段兼容性
+
+## English
+
+**Multi Tab Grid** — a Firefox / Edge extension (Manifest V3) that opens multiple copies of a webpage (or all open tabs of the current window) as independently positioned windows forming a grid layout on screen.
+
+### Features
+
+- **Bulk open**: open the current tab's URL (or a custom URL) 1~16 times as separate windows
+- **Grid tiling**: windows are precisely positioned into an approximate square grid — 1~3 in a single row, 4 → 2×2, 6 → 3×2, 9 → 3×3, etc.
+- **Tile all tabs**: tile every tab of the current window (http/https only, up to 16); the original window is closed when everything is tiled, or kept when special pages (e.g. `about:`) are skipped
+- **Auto web fullscreen for Bilibili Live**: a global switch (off by default). Uses the player JS API `livePlayer.setFullscreenStatus(1)` via Firefox Xray (`wrappedJSObject`) or page-context script injection on Chromium, with a control-bar button click as fallback
+- **Close original tab** option: only closes the source tab when the URL matches what was opened
+- **Close group**: one click to close all windows opened by the extension
+- **Settings memory**: last URL, count and switches are remembered and shown for confirmation each time
+- **Maximize hint**: shown when the window is not maximized
+- **i18n**: English and Simplified Chinese, auto-follows the browser language
+
+### Install (temporary, for development/testing)
+
+- **Edge / Chrome**: the root `manifest.json` is the Chromium version — `edge://extensions` → Developer mode → Load unpacked → select the project root
+- **Firefox**: run `node build-firefox.mjs`, then `about:debugging` → This Firefox → Load Temporary Add-on → pick `dist-firefox/manifest.json`

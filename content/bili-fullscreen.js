@@ -1,10 +1,25 @@
+// 跨浏览器兼容：Chromium(Edge/Chrome) 无 browser 全局，MV3 下 chrome.* 同样返回 Promise
+globalThis.browser ??= chrome;
+
 // B站直播自动网页全屏 content script
 // 全局开关：popup 勾选后写入 storage 的 biliAutoFullscreen，开启后所有 B 站直播页自动全屏，直到手动关闭
 // 仅在普通直播间生效；特殊聚合页（iframe 嵌入播放器）跨域无法操作
+//
+// 主路径（按浏览器分派）：
+//   Firefox：window.wrappedJSObject.livePlayer（Xray 特性）
+//   Chromium/Edge：注入 content/injected/bili-api.js 到页面上下文
+// 备用路径：唤出控制条后点击网页全屏按钮（两浏览器通用）
+//
+// 成功判定：不依赖"点击是否命中"，而是几何验证——网页全屏生效后
+// 播放器容器（#live-player）会被 CSS 提升为近乎铺满视口，以此为准。
+// 16+ 窗口并发重载时页面初始化慢，点击命中未就绪元素是无效的，
+// 必须验证失败后继续重试，否则个别页面会停留在网页模式下。
 
 const FLAG_KEY = "biliAutoFullscreen";
-const MAX_RETRY = 30;        // 最多重试次数
-const RETRY_INTERVAL = 500;  // 重试间隔 ms
+const IS_FIREFOX = typeof window.wrappedJSObject !== "undefined";
+const MAX_RETRY = 60;          // 最多重试次数（并发 16 窗时页面初始化很慢，预算放宽）
+const RETRY_INTERVAL = 500;    // 重试间隔 ms
+const VERIFY_DELAY = 1200;     // 触发后等待生效再验证的间隔 ms
 let running = false;
 
 // 是否已开启自动全屏（storage.local 全局开关）
@@ -17,19 +32,44 @@ async function isEnabled() {
   }
 }
 
-// 主路径：调用直播播放器 JS API（Firefox Xray 特性，wrappedJSObject）
-// 社区脚本验证：livePlayer.setFullscreenStatus(1) 可直接进入网页全屏
-function tryPlayerApi() {
+// 几何验证：网页全屏生效后播放器近乎铺满视口
+function isWebFullscreenActive() {
+  const player = document.getElementById("live-player");
+  if (!player) return false;
+  const rect = player.getBoundingClientRect();
+  return (
+    rect.width >= window.innerWidth * 0.95 &&
+    rect.height >= window.innerHeight * 0.9
+  );
+}
+
+// 验证生效与否：等 VERIFY_DELAY 后检查，返回是否成功
+function waitForActivation() {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(isWebFullscreenActive()), VERIFY_DELAY);
+  });
+}
+
+// 主路径（Firefox）：调用直播播放器 JS API（Xray 特性，wrappedJSObject）
+async function tryPlayerApiFirefox() {
   try {
     const livePlayer = window.wrappedJSObject && window.wrappedJSObject.livePlayer;
     if (livePlayer && typeof livePlayer.setFullscreenStatus === "function") {
       livePlayer.setFullscreenStatus(1);
-      return true;
+      return await waitForActivation();
     }
   } catch (e) {
     // 播放器 API 尚未就绪，继续重试
   }
   return false;
+}
+
+// 主路径（Chromium/Edge）：注入脚本到页面上下文（注入脚本自带轮询与验证）
+function injectPageScript() {
+  const script = document.createElement("script");
+  script.src = browser.runtime.getURL("content/injected/bili-api.js");
+  script.onload = () => script.remove();
+  (document.head || document.documentElement).appendChild(script);
 }
 
 // 备用路径：向播放器派发 mousemove 唤出控制条，再点击网页全屏图标
@@ -69,22 +109,34 @@ async function autoFullscreen() {
   if (!location.hostname.includes("live.bilibili.com")) return;
   running = true;
 
-  for (let i = 0; i < MAX_RETRY; i++) {
-    if (tryPlayerApi()) {
-      running = false;
-      return;
+  try {
+    // 主路径：Firefox 调 API 并验证；Chromium 注入页面脚本（自带轮询+验证）
+    if (IS_FIREFOX) {
+      for (let i = 0; i < MAX_RETRY && running; i++) {
+        if (await tryPlayerApiFirefox()) return;
+        await new Promise(r => setTimeout(r, RETRY_INTERVAL));
+      }
+    } else {
+      injectPageScript();
+      // 注入脚本自带 30s 轮询，这里给足时间后查一次结果
+      for (let waited = 0; waited < MAX_RETRY * RETRY_INTERVAL; waited += RETRY_INTERVAL) {
+        if (isWebFullscreenActive()) return;
+        await new Promise(r => setTimeout(r, RETRY_INTERVAL));
+      }
     }
-    await new Promise(r => setTimeout(r, RETRY_INTERVAL));
-  }
 
-  // API 路径失败，降级为按钮点击
-  for (let i = 0; i < MAX_RETRY; i++) {
-    if (tryClickButton()) {
-      break;
+    // 备用路径：按钮点击，点击后验证是否真的生效，未生效则继续重试
+    for (let i = 0; i < MAX_RETRY && running; i++) {
+      tryClickButton();
+      if (await waitForActivation()) return;
+      await new Promise(r => setTimeout(r, RETRY_INTERVAL));
     }
-    await new Promise(r => setTimeout(r, RETRY_INTERVAL));
+
+    // 兜底返回：Chromium 注入版可能只是没等到，最后一次无延时的几何检查
+    if (!IS_FIREFOX && isWebFullscreenActive()) return;
+  } finally {
+    running = false;
   }
-  running = false;
 }
 
 // background 消息触发（优先路径）

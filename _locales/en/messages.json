@@ -1,0 +1,112 @@
+{
+  "extName": {
+    "message": "Multi Tab Grid",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Open multiple copies of a webpage in a tiled grid layout, with optional auto web fullscreen for Bilibili Live",
+    "description": "Extension description"
+  },
+  "maximizeHint": {
+    "message": "Tip: maximize the window first for more accurate tiling"
+  },
+  "appTitle": {
+    "message": "Multi Tab Grid"
+  },
+  "urlLabel": {
+    "message": "URL"
+  },
+  "urlPlaceholder": {
+    "message": "Enter a URL, or leave empty to use the current tab"
+  },
+  "useCurrentTab": {
+    "message": "Use current tab"
+  },
+  "countLabel": {
+    "message": "Count (1~16)"
+  },
+  "biliFullscreen": {
+    "message": "Auto web fullscreen for Bilibili Live"
+  },
+  "closeOriginTab": {
+    "message": "Close original tab after opening"
+  },
+  "openAndTile": {
+    "message": "Open & Tile"
+  },
+  "closeGroup": {
+    "message": "Close Group"
+  },
+  "tileAllTabs": {
+    "message": "Tile All Tabs"
+  },
+  "gridHint": {
+    "message": "$COUNT$ windows → $COLS$ cols x $ROWS$ rows",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "cols": { "content": "$2" },
+      "rows": { "content": "$3" }
+    }
+  },
+  "noUrlForCurrentTab": {
+    "message": "No available URL on the current tab"
+  },
+  "enterUrl": {
+    "message": "Please enter a URL, or click \"Use current tab\""
+  },
+  "openedWindows": {
+    "message": "Opened $COUNT$ windows ($COLS$x$ROWS$)",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "cols": { "content": "$2" },
+      "rows": { "content": "$3" }
+    }
+  },
+  "tilingTabs": {
+    "message": "Tiling tabs…"
+  },
+  "tiledTabs": {
+    "message": "Tiled $COUNT$ tabs ($COLS$x$ROWS$)",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "cols": { "content": "$2" },
+      "rows": { "content": "$3" }
+    }
+  },
+  "tiledLimited": {
+    "message": ", only the first $COUNT$ were tiled (limit reached)",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "tiledSkipped": {
+    "message": ", $COUNT$ special page(s) kept in the original window",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "closedWindows": {
+    "message": "Closed $COUNT$ windows",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "openFailed": {
+    "message": "Failed to open"
+  },
+  "tileFailed": {
+    "message": "Failed to tile"
+  },
+  "closeFailed": {
+    "message": "Failed to close"
+  },
+  "errNoTileableTabs": {
+    "message": "No tileable tabs (http/https pages only)"
+  },
+  "errInvalidUrl": {
+    "message": "Invalid URL"
+  },
+  "errUnknownMessage": {
+    "message": "Unknown message type"
+  }
+}

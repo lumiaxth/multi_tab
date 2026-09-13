@@ -1,0 +1,112 @@
+{
+  "extName": {
+    "message": "Multi Tab 网格多开",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "批量打开指定数量的网页并网格化平铺，支持哔哩哔哩直播自动网页全屏",
+    "description": "Extension description"
+  },
+  "maximizeHint": {
+    "message": "建议先最大化窗口，平铺效果更准确"
+  },
+  "appTitle": {
+    "message": "Multi Tab 网格多开"
+  },
+  "urlLabel": {
+    "message": "网址"
+  },
+  "urlPlaceholder": {
+    "message": "输入网址，留空则使用当前标签页"
+  },
+  "useCurrentTab": {
+    "message": "使用当前标签页"
+  },
+  "countLabel": {
+    "message": "打开数量（1~16）"
+  },
+  "biliFullscreen": {
+    "message": "哔哩哔哩直播自动网页全屏"
+  },
+  "closeOriginTab": {
+    "message": "多开后关闭原标签页"
+  },
+  "openAndTile": {
+    "message": "打开并平铺"
+  },
+  "closeGroup": {
+    "message": "关闭整组窗口"
+  },
+  "tileAllTabs": {
+    "message": "平铺所有标签页"
+  },
+  "gridHint": {
+    "message": "$COUNT$ 个窗口 → $COLS$ 列 x $ROWS$ 行",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "cols": { "content": "$2" },
+      "rows": { "content": "$3" }
+    }
+  },
+  "noUrlForCurrentTab": {
+    "message": "当前标签页无可用的网址"
+  },
+  "enterUrl": {
+    "message": "请输入网址，或点击“使用当前标签页”"
+  },
+  "openedWindows": {
+    "message": "已打开 $COUNT$ 个窗口（$COLS$x$ROWS$）",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "cols": { "content": "$2" },
+      "rows": { "content": "$3" }
+    }
+  },
+  "tilingTabs": {
+    "message": "正在平铺标签页…"
+  },
+  "tiledTabs": {
+    "message": "已平铺 $COUNT$ 个标签页（$COLS$x$ROWS$）",
+    "placeholders": {
+      "count": { "content": "$1" },
+      "cols": { "content": "$2" },
+      "rows": { "content": "$3" }
+    }
+  },
+  "tiledLimited": {
+    "message": "，超出上限仅取前 $COUNT$ 个",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "tiledSkipped": {
+    "message": "，$COUNT$ 个特殊页面保留在原窗口",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "closedWindows": {
+    "message": "已关闭 $COUNT$ 个窗口",
+    "placeholders": {
+      "count": { "content": "$1" }
+    }
+  },
+  "openFailed": {
+    "message": "打开失败"
+  },
+  "tileFailed": {
+    "message": "平铺失败"
+  },
+  "closeFailed": {
+    "message": "关闭失败"
+  },
+  "errNoTileableTabs": {
+    "message": "没有可平铺的标签页（仅支持 http/https 页面）"
+  },
+  "errInvalidUrl": {
+    "message": "URL 无效"
+  },
+  "errUnknownMessage": {
+    "message": "未知消息类型"
+  }
+}

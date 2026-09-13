@@ -1,27 +1,51 @@
 {
   "manifest_version": 3,
-  "name": "Multi Tab 网格多开",
-  "version": "1.0.0",
-  "description": "批量打开指定数量的网页并网格化平铺，支持哔哩哔哩直播自动网页全屏",
-  "permissions": ["storage", "tabs"],
+  "name": "__MSG_extName__",
+  "version": "1.1.6",
+  "description": "__MSG_extDescription__",
+  "default_locale": "zh_CN",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Multi Tab 网格多开"
+    "default_title": "__MSG_extName__",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_scripts": [
     {
-      "matches": ["*://live.bilibili.com/*"],
-      "js": ["content/bili-fullscreen.js"],
+      "matches": [
+        "*://live.bilibili.com/*"
+      ],
+      "js": [
+        "content/bili-fullscreen.js"
+      ],
       "run_at": "document_idle"
     }
   ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "multi-tab@opencode.local",
-      "strict_min_version": "115.0"
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://live.bilibili.com/*"
+      ],
+      "resources": [
+        "content/injected/bili-api.js"
+      ]
     }
-  }
+  ]
 }
