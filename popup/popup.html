@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="maximizeHint" class="maximize-hint hidden">
+    建议先最大化窗口，平铺效果更准确
+  </div>
+
+  <h1>Multi Tab 网格多开</h1>
+
+  <label class="field">
+    <span>网址</span>
+    <input id="urlInput" type="text" placeholder="输入网址，留空则使用当前标签页" />
+  </label>
+  <button id="useCurrentBtn" type="button">使用当前标签页</button>
+
+  <label class="field">
+    <span>打开数量（1~16）</span>
+    <input id="countInput" type="number" min="1" max="16" value="4" />
+  </label>
+
+  <label class="checkbox">
+    <input id="fullscreenToggle" type="checkbox" />
+    <span>哔哩哔哩直播自动网页全屏</span>
+  </label>
+
+  <label class="checkbox">
+    <input id="closeOriginToggle" type="checkbox" />
+    <span>多开后关闭原标签页（仅多开当前标签时）</span>
+  </label>
+
+  <div id="gridHint" class="hint"></div>
+
+  <div class="actions">
+    <button id="openBtn" type="button" class="primary">打开并平铺</button>
+    <button id="closeAllBtn" type="button">关闭整组窗口</button>
+  </div>
+
+  <div class="actions">
+    <button id="tileTabsBtn" type="button">平铺所有标签页</button>
+  </div>
+
+  <div id="statusMsg" class="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

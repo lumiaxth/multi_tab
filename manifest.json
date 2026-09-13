@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Multi Tab 网格多开",
+  "version": "1.0.0",
+  "description": "批量打开指定数量的网页并网格化平铺，支持哔哩哔哩直播自动网页全屏",
+  "permissions": ["storage", "tabs"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Multi Tab 网格多开"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://live.bilibili.com/*"],
+      "js": ["content/bili-fullscreen.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "multi-tab@opencode.local",
+      "strict_min_version": "115.0"
+    }
+  }
+}
