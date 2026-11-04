@@ -105,5 +105,11 @@
   },
   "errUnknownMessage": {
     "message": "Unknown message type"
+  },
+  "supportSponsor": {
+    "message": "❤️ Donate"
+  },
+  "supportReview": {
+    "message": "⭐ Rate us"
   }
 }

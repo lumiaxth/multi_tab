@@ -84,10 +84,30 @@ button.primary:hover {
   margin-top: 6px;
   font-size: 11px;
   color: #c33;
-  min-height: 14px;
   white-space: pre-wrap;
 }
 
 .status.ok {
   color: #2a7a2a;
+}
+
+.support {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 10px;
+  color: #999;
+}
+
+.support a {
+  color: #999;
+  text-decoration: none;
+}
+
+.support a:hover {
+  color: #2b7de9;
+  text-decoration: underline;
+}
+
+.support .sep {
+  margin: 0 4px;
 }

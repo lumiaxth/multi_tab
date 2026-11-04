@@ -186,6 +186,21 @@ closeAllBtn.addEventListener("click", async () => {
 });
 
 useCurrentBtn.addEventListener("click", fillCurrentTabUrl);
+
+// 赞助 / 好评入口：href 供中键或 Ctrl+点击直接打开，左键拦截后走 HE.support.open
+// （popup 上下文用 tabs.create，弹窗自动关闭）
+function bindSupportLink(el, urlOf) {
+  if (!el) return;
+  const support = globalThis.HE && HE.support;
+  const url = support ? urlOf() : "";
+  if (url) el.href = url;
+  el.addEventListener("click", e => {
+    e.preventDefault();
+    if (support && url) support.open(url);
+  });
+}
+bindSupportLink(document.getElementById("sponsorLink"), () => HE.support.sponsorUrl());
+bindSupportLink(document.getElementById("reviewLink"), () => HE.support.storeUrl());
 countInput.addEventListener("input", updateHint);
 countInput.addEventListener("change", saveSettings);
 fullscreenToggle.addEventListener("change", saveSettings);

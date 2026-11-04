@@ -105,5 +105,11 @@
   },
   "errUnknownMessage": {
     "message": "未知消息类型"
+  },
+  "supportSponsor": {
+    "message": "❤️ 赞助"
+  },
+  "supportReview": {
+    "message": "⭐ 好评鼓励"
   }
 }
