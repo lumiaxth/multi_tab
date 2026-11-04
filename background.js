@@ -35,9 +35,11 @@ function computeGrid(n, availWidth, availHeight) {
   for (let i = 0; i < n; i++) {
     const col = i % cols;
     const row = Math.floor(i / cols);
-    // 末行/末列吸收 floor 舍入的余数，保证格线精确
-    const cellW = (col < cols - 1 ? baseW : availWidth - (cols - 1) * baseW) + CELL_OVERLAP;
-    const cellH = (row < rows - 1 ? baseH : availHeight - (rows - 1) * baseH) + CELL_OVERLAP;
+    // 重叠补偿只加在非末列/非末行（覆盖格间接缝，且被后一列/行的边框吸收）；
+    // 末列/末行不加补偿并吸收 floor 舍入余数，正好贴住显示器右/底边缘，
+    // 保证任何列行都不会超出显示器可用区域（多显示器坐标系原点也更严格）
+    const cellW = col < cols - 1 ? baseW + CELL_OVERLAP : availWidth - (cols - 1) * baseW;
+    const cellH = row < rows - 1 ? baseH + CELL_OVERLAP : availHeight - (rows - 1) * baseH;
     cells.push({
       left: col * baseW,
       top: row * baseH,
@@ -46,6 +48,34 @@ function computeGrid(n, availWidth, availHeight) {
     });
   }
   return { cols, rows, cells };
+}
+
+// 落位校正：Chromium/Firefox 的 windows.create/tabs.move 不保证按请求的
+// left/top/width/height 精确落位（混合 DPI 缩放换算、窗口最小尺寸钳制都会引入漂移），
+// 读取实际值后按差值做一次 windows.update，保证网格铺满当前显示器
+async function applyCellRect(win, cell, availLeft, availTop) {
+  const want = {
+    left: cell.left + availLeft,
+    top: cell.top + availTop,
+    width: cell.width,
+    height: cell.height
+  };
+  const dx = (want.left - win.left) || 0;
+  const dy = (want.top - win.top) || 0;
+  const dw = (want.width - win.width) || 0;
+  const dh = (want.height - win.height) || 0;
+  if (dx || dy || dw || dh) {
+    try {
+      await browser.windows.update(win.id, {
+        left: want.left,
+        top: want.top,
+        width: want.width,
+        height: want.height
+      });
+    } catch (e) {
+      // 校正失败（窗口可能已被关闭），忽略
+    }
+  }
 }
 
 async function getGridGroup() {
@@ -83,7 +113,18 @@ function normalizeUrl(input) {
   }
 }
 
-async function openGrid({ url, count, fullscreen, availWidth, availHeight, availLeft, availTop }) {
+async function openGrid({
+  url,
+  count,
+  fullscreen,
+  availWidth,
+  availHeight,
+  availLeft,
+  availTop,
+  closeOrigin,
+  originTabId,
+  originTabUrl
+}) {
   const grid = computeGrid(count, availWidth, availHeight);
   const windowIds = [];
 
@@ -98,6 +139,8 @@ async function openGrid({ url, count, fullscreen, availWidth, availHeight, avail
     };
     const win = await browser.windows.create(createInfo);
     windowIds.push(win.id);
+    // 落位校正，保证铺满当前显示器
+    await applyCellRect(win, cell, availLeft, availTop);
     // 多开页面默认静音
     const muted = await muteTab(win.tabs[0].id);
     // B站直播页面自动网页全屏：通过 URL 参数标记，content script 读取
@@ -113,7 +156,22 @@ async function openGrid({ url, count, fullscreen, availWidth, availHeight, avail
   }
 
   await setGridGroup(windowIds);
-  return { ok: true, cols: grid.cols, rows: grid.rows, windowIds, normUrl: url };
+
+  // 关闭原标签页：URL 与多开地址一致时才关，避免误关其他页面
+  let tabClosed = false;
+  if (closeOrigin && typeof originTabId === "number" && originTabUrl) {
+    const stripSlash = (s) => String(s).replace(/\/$/, "");
+    if (stripSlash(originTabUrl) === stripSlash(url)) {
+      try {
+        await browser.tabs.remove(originTabId);
+        tabClosed = true;
+      } catch (e) {
+        // 标签页可能已被手动关闭，忽略
+      }
+    }
+  }
+
+  return { ok: true, cols: grid.cols, rows: grid.rows, windowIds, normUrl: url, tabClosed };
 }
 
 async function closeGridGroup() {
@@ -199,7 +257,11 @@ async function tileAllTabs({ availWidth, availHeight, availLeft, availTop }) {
         }
       }
     }
-    if (win) windowIds.push(win.windowId);
+    // 落位校正，保证铺满当前显示器
+    if (win) {
+      await applyCellRect(win, cell, availLeft, availTop);
+      windowIds.push(win.windowId);
+    }
   }
 
   await setGridGroup(windowIds);
@@ -241,6 +303,9 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
               url,
               count,
               fullscreen: !!message.fullscreen,
+              closeOrigin: !!message.closeOrigin,
+              originTabId: (typeof message.originTabId === "number" ? message.originTabId : parseInt(message.originTabId, 10)),
+              originTabUrl: message.originTabUrl || "",
               ...parseMonitorRect(message)
             })
           );

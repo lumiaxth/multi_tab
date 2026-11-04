@@ -1,17 +1,14 @@
 {
   "extName": {
-    "message": "Multi Tab 网格多开",
+    "message": "MultiTab - 网页多开和整理助手",
     "description": "Extension name"
   },
   "extDescription": {
     "message": "批量打开指定数量的网页并网格化平铺，支持哔哩哔哩直播自动网页全屏",
     "description": "Extension description"
   },
-  "maximizeHint": {
-    "message": "建议先最大化窗口，平铺效果更准确"
-  },
   "appTitle": {
-    "message": "Multi Tab 网格多开"
+    "message": "MultiTab - 网页多开和整理助手"
   },
   "urlLabel": {
     "message": "网址"

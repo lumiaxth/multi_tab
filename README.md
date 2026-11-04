@@ -1,4 +1,4 @@
-# Multi Tab 网格多开
+# MultiTab - 网页多开和整理助手
 
 [English](#english) | 简体中文
 
@@ -8,7 +8,7 @@
 
 ## 插件简介
 
-Multi Tab 网格多开解决一个核心问题：**在浏览器里同时打开并摆放多个页面副本**。典型场景有：
+**MultiTab - Web Multi-Open & Organizer**（MultiTab - 网页多开和整理助手）解决一个核心问题：**在浏览器里同时打开并摆放多个页面副本**。典型场景有：
 
 - 同时监控多个直播间或行情页面：输入网址 + 打开数量，一键铺满屏幕
 - 多标签整理：把当前窗口的所有标签页一键拆分成整齐的窗口网格
@@ -30,7 +30,6 @@ Multi Tab 网格多开解决一个核心问题：**在浏览器里同时打开�
 - **多开后关闭原标签页**：可选开关（默认关闭），仅当多开 URL 与当前标签页一致时才关闭，避免误关
 - **一键关闭整组**：记住本组窗口 ID，一键关闭所有批量打开的窗口
 - **设置记忆**：记住上次的网址、数量、开关状态，下次打开 popup 时回显供确认修改
-- **最大化提示**：窗口未最大化时显示提示条，建议最大化以获得更准确的平铺效果
 
 ## 技术说明
 
@@ -84,7 +83,7 @@ multi_tab/
 ├── background.js            # 网格计算、批量开窗、平铺标签页、整组关闭
 ├── popup/
 │   ├── popup.html           # 设置界面（data-i18n 标记）
-│   ├── popup.css            # 样式（含最大化提示条）
+│   ├── popup.css            # 样式
 │   └── popup.js             # i18n 填充、设置读写、消息发送、原标签页关闭
 ├── content/
 │   ├── bili-fullscreen.js   # B站直播自动网页全屏（分派浏览器专用路径）
@@ -109,7 +108,7 @@ multi_tab/
 
 ## English
 
-**Multi Tab Grid** — a Firefox / Edge extension (Manifest V3) that opens multiple copies of a webpage (or all open tabs of the current window) as independently positioned windows forming a grid layout on screen.
+**MultiTab - Web Multi-Open & Organizer** — a Firefox / Edge extension (Manifest V3) that opens multiple copies of a webpage (or all open tabs of the current window) as independently positioned windows forming a grid layout on screen.
 
 ### Features
 

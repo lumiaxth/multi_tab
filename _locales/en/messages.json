@@ -1,17 +1,14 @@
 {
   "extName": {
-    "message": "Multi Tab Grid",
+    "message": "MultiTab - Web Multi-Open & Organizer",
     "description": "Extension name"
   },
   "extDescription": {
     "message": "Open multiple copies of a webpage in a tiled grid layout, with optional auto web fullscreen for Bilibili Live",
     "description": "Extension description"
   },
-  "maximizeHint": {
-    "message": "Tip: maximize the window first for more accurate tiling"
-  },
   "appTitle": {
-    "message": "Multi Tab Grid"
+    "message": "MultiTab - Web Multi-Open & Organizer"
   },
   "urlLabel": {
     "message": "URL"

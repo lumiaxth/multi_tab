@@ -21,7 +21,6 @@ const closeAllBtn = document.getElementById("closeAllBtn");
 const tileTabsBtn = document.getElementById("tileTabsBtn");
 const gridHint = document.getElementById("gridHint");
 const statusMsg = document.getElementById("statusMsg");
-const maximizeHint = document.getElementById("maximizeHint");
 
 function setStatus(text, ok) {
   statusMsg.textContent = text || "";
@@ -112,12 +111,31 @@ openBtn.addEventListener("click", async () => {
   }
   await saveSettings();
 
-  const rect = getMonitorRect();
+  // 在打开任何窗口之前先捕捉原标签页信息；一致性判断与关闭都交给 background
+  // （Firefox 下 popup 会随逐窗创建失焦，自身上下文里的后续查询不可靠）
+  let originTabId;
+  let originTabUrl;
+  if (closeOriginToggle.checked) {
+    try {
+      const originTabs = await browser.tabs.query({ active: true, currentWindow: true });
+      if (originTabs[0] && originTabs[0].url) {
+        originTabId = originTabs[0].id;
+        originTabUrl = originTabs[0].url;
+      }
+    } catch (e) {
+      // 忽略，退化为不关闭
+    }
+  }
+
+  const rect = await getMonitorRect();
   const response = await browser.runtime.sendMessage({
     type: "MT_OPEN_GRID",
     url,
     count,
     fullscreen: fullscreenToggle.checked,
+    closeOrigin: closeOriginToggle.checked,
+    originTabId,
+    originTabUrl,
     availWidth: rect.availWidth,
     availHeight: rect.availHeight,
     availLeft: rect.availLeft,
@@ -126,20 +144,7 @@ openBtn.addEventListener("click", async () => {
 
   if (response && response.ok) {
     setStatus(t("openedWindows", count, response.cols, response.rows), true);
-    // 仅当多开 URL 与当前激活标签页一致时，关闭原标签页
-    // background 对 URL 做过规范化（补协议），用回传的 normUrl 比较才准确
-    if (closeOriginToggle.checked && response.normUrl) {
-      try {
-        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-        const tab = tabs[0];
-        if (tab && tab.url && tab.url.replace(/\/$/, "") === response.normUrl.replace(/\/$/, "")) {
-          await browser.tabs.remove(tab.id);
-        }
-      } catch (e) {
-        // 标签页可能已被关闭，忽略
-      }
-    }
-    // 打开后关闭 popup，避免遮挡
+    // 关闭原标签页由 background 判断并执行；popup 延迟关闭避免遮挡
     setTimeout(() => window.close(), 600);
   } else {
     setStatus((response && response.error) || t("openFailed"));
@@ -147,7 +152,7 @@ openBtn.addEventListener("click", async () => {
 });
 
 tileTabsBtn.addEventListener("click", async () => {
-  const rect = getMonitorRect();
+  const rect = await getMonitorRect();
   setStatus(t("tilingTabs"));
   const response = await browser.runtime.sendMessage({
     type: "MT_TILE_TABS",
@@ -187,29 +192,34 @@ fullscreenToggle.addEventListener("change", saveSettings);
 closeOriginToggle.addEventListener("change", saveSettings);
 urlInput.addEventListener("change", saveSettings);
 
-// 读取 popup 所在显示器的可用分辨率（已扣任务栏）与其在桌面坐标系中的原点
-// popup 始终显示在浏览器窗口所在的显示器上，无需额外权限
-function getMonitorRect() {
+// 读取 popup 所在显示器的可用区域与其原点：
+// - 优先使用 popup 宿主窗口（最大化时=所在显示器可用区域）自身的几何值，
+//   它与 windows.create/update 的坐标语义一致，可绕开 Firefox 在混 DPI
+//   副显示器上对 screen.availLeft/Top 的误报（Mozilla bug 1246346）
+// - 非 maximized 窗口回退到 screen.avail*（Chromium 语义正确）
+async function getMonitorRect() {
   const s = window.screen;
-  return {
+  const rect = {
     availWidth: s.availWidth,
     availHeight: s.availHeight,
     availLeft: s.availLeft || 0,
     availTop: s.availTop || 0
   };
-}
-
-// 未最大化且非全屏时显示提示条
-async function checkWindowState() {
   try {
-    const win = await browser.windows.get(browser.windows.WINDOW_ID_CURRENT);    if (win.state !== "maximized" && win.state !== "fullscreen") {
-      maximizeHint.classList.remove("hidden");
+    const win = await browser.windows.get(browser.windows.WINDOW_ID_CURRENT);
+    if (win && (win.state === "maximized" || win.state === "fullscreen")) {
+      return {
+        availWidth: win.width,
+        availHeight: win.height,
+        availLeft: win.left || 0,
+        availTop: win.top || 0
+      };
     }
   } catch (e) {
-    // 忽略
+    // 忽略，使用 screen 兜底
   }
+  return rect;
 }
 
-checkWindowState();
 applyI18n();
 loadSettings();

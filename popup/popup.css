@@ -91,17 +91,3 @@ button.primary:hover {
 .status.ok {
   color: #2a7a2a;
 }
-
-.maximize-hint {
-  background: #fff3cd;
-  border: 1px solid #e0c36a;
-  border-radius: 3px;
-  color: #7a5d00;
-  font-size: 11px;
-  padding: 5px 6px;
-  margin-bottom: 6px;
-}
-
-.maximize-hint.hidden {
-  display: none;
-}
